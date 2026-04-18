@@ -1,0 +1,338 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[slovak]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{hyperref}
+
+\geometry{margin=2.5cm}
+
+\newtheorem{definition}{Definícia}[section]
+\newtheorem{assumption}{Predpoklad}[section]
+\newtheorem{proposition}{Tvrdenie}[section]
+\newtheorem{remark}{Poznámka}[section]
+\newtheorem{theorem}{Veta}[section]
+
+\title{Dominancia prostredia nad schopnosťami entity}
+\author{Kristian Sestak}
+\date{}
+
+\begin{document}
+\maketitle
+
+% ============================================================
+\section{Úvod do problematiky}
+% ============================================================
+
+V spoločnosti prevláda presvedčenie, že úspech človeka je hlavne výsledkom jeho talentu, šikovnosti a tvrdej práce. Tento pohľad, tzv.\ meritokratický ideál, hovorí: \uv{Ak si dostatočne schopný a dostatočne sa snažíš, uspeješ.} Je to silný príbeh, pretože dáva človeku pocit kontroly nad vlastným osudom.
+
+Je potrebné hneď na úvod priznať, že seriózna meritokratická pozícia netvrdí, že prostredie nehrá rolu. Tvrdí, že \emph{pri kontrolovanom prostredí} (rovnaké podmienky) dominujú schopnosti. Toto tvrdenie tento článok priamo nevyvracia. Zameriavame sa na iný, silnejší výrok, ktorý sa často implicitne spája s~meritokratickým ideálom v~populárnom diskurze: že \emph{v~reálnom svete s~nerovnými podmienkami} sú výsledky dominantne určené schopnosťami. Práve tento druhý výrok je naším cieľom.
+
+Lenže keď sa pozrieme na svet okolo seba, vidíme niečo iné. Dvaja rovnako šikovní ľudia dosiahnu dramaticky odlišné výsledky len preto, že sa narodili na rôznych miestach, v~rôznom čase, do rôznych rodín. Programátor v~Silicon Valley a~rovnako talentovaný programátor v~odľahlej dedine nemajú rovnaké šance, nie preto, že by sa líšili schopnosťami, ale preto, že ich okolie ponúka zásadne odlišné príležitosti.
+
+Otázka znie: dá sa to dokázať, nielen tvrdiť? Dá sa matematicky ukázať, že prostredie hrá väčšiu rolu než schopnosti jednotlivca?
+
+Táto otázka nie je nová. Bourdieu~\cite{bourdieu1986} analyzoval rolu kultúrneho a~sociálneho kapitálu pri reprodukcii spoločenského postavenia. Chetty et al.~\cite{chetty2014} empiricky preukázali silné rozdiely v~medzigeneračnej mobilite medzi regiónmi USA. Milanovic~\cite{milanovic2015} ukázal, že približne dve tretiny globálnej nerovnosti v~príjmoch sa dajú vysvetliť samotnou krajinou narodenia. Pluchino et al.~\cite{pluchino2018} pomocou agent-based simulácie ukázali, že rozdelenie bohatstva v~populácii s~normálne rozdeleným talentom je dominantne určené náhodou, nie talentom.
+
+Náš príspevok sa vymedzuje voči Pluchinovi~\cite{pluchino2018} nasledovne: kým Pluchino ukazuje dominanciu prostredia \emph{simulačne} pri konkrétnom mechanizme stretnutí s~\uv{šťastnými} a~\uv{nešťastnými} udalosťami, my ukazujeme ten istý záver \emph{analyticky} ako dôsledok jedinej štrukturálnej asymetrie $k \ll n$, bez nutnosti špecifikovať konkrétny proces. Ide teda o~komplementárny pohľad: simulácia dáva kvantitatívny obraz, formálny rámec ukazuje, prečo je výsledok robustný voči detailom mechanizmu.
+
+\paragraph{Čestné priznanie rozsahu.} Matematická časť tohto príspevku (dekompozícia variancie, elasticity) je elementárna. Podstata tvrdenia nie je v~matematike, ale v~empirickom predpoklade $\operatorname{Var}(\ln \rho_{\text{eff}}) \gg \operatorname{Var}(\ln k)$. Formálny rámec teda neprináša nový objav, ale čistú formuláciu: \emph{ak} je splnená táto nerovnosť, \emph{potom} dominuje prostredie. Hlavná ťažisková časť príspevku je ukázať, že táto nerovnosť platí v~širokých reálnych podmienkach a~má jasný štrukturálny dôvod v~asymetrii $k \ll n$.
+
+Problém je, že prostredie je dynamické, mení sa v~čase, priestore, závisí od politiky, ekonomiky, kultúry, náhody. Priamo porovnávať \uv{vplyv prostredia} a~\uv{vplyv schopností} je mimoriadne ťažké. Preto volíme iný prístup: namiesto merania konkrétnych prostredí sa pozrieme na \emph{štrukturálnu asymetriu} medzi tým, koľko možností svet ponúka a~koľko z~nich dokáže jeden človek vôbec preskúmať.
+
+% ============================================================
+\section{Popis problému}
+% ============================================================
+
+Ako matematicky dokázať, že postavenie a~úspech jednotlivca závisí primárne od prostredia (okolností), nie od jeho vlastných schopností?
+
+Priamy dôkaz je ťažký, pretože prostredie je dynamické, mení sa v~čase aj priestore. Preto volíme nepriamy prístup cez \emph{kombinatorickú asymetriu možností}.
+
+% ============================================================
+\section{Formalizácia}
+% ============================================================
+
+\subsection{Definície}
+
+\begin{definition}[Entita]
+Nech $E$ označuje entitu (jednotlivca).
+\end{definition}
+
+\begin{definition}[Prostredie]
+Nech $P$ označuje prostredie (okolie, spoločnosť, doba).
+\end{definition}
+
+\begin{definition}[Kapacita entity]
+Nech $k(E, t) \in \mathbb{N}$ je \emph{kapacita entity} v~čase $t$, teda počet možností, ktoré entita $E$ dokáže preskúmať. Kapacita je určená schopnosťami, energiou a~dĺžkou života entity.
+\end{definition}
+
+\begin{remark}[Spojitá aproximácia]
+Kapacita $k$ je z~definície diskrétna veličina ($k \in \mathbb{N}$). V~ďalšom texte s~ňou však pracujeme ako so spojitou premennou (derivácie, elasticity). Ide o~štandardnú aproximáciu, ktorá je oprávnená pre dostatočne veľké $k$, kedy diskrétne rozdiely $\Delta k = 1$ dobre aproximujú spojitú deriváciu.
+\end{remark}
+
+\begin{definition}[Priestor možností prostredia]
+Nech $n(P, t) \in \mathbb{N}$ je celkový počet možností, ktoré prostredie $P$ ponúka v~čase $t$ (pracovné pozície, vzťahy, príležitosti a~pod.).
+\end{definition}
+
+\begin{definition}[Priaznivé možnosti a~úspech]
+Nech $F \subseteq \{1, \dots, n\}$ je množina \emph{priaznivých možností}. Entita dosiahne \emph{úspech}, ak aspoň jedna z~možností, ktoré v~priebehu života preskúma, patrí do $F$. Úspech je teda binárna premenná. Model je invariantný voči konkrétnemu kritériu úspechu (pracovné uplatnenie, ekonomická bezpečnosť, partnerský vzťah a~pod.); mení sa len množina $F$, nie štruktúra argumentu.
+\end{definition}
+
+\begin{definition}[Hustota priaznivých možností]
+Definujeme hustotu priaznivých možností ako
+\begin{equation}
+    \rho \;=\; \frac{|F|}{n}.
+\end{equation}
+\end{definition}
+
+\subsection{Kľúčový štrukturálny predpoklad}
+
+\begin{assumption}[Kombinatorická asymetria]\label{asp:asymetria}
+Kapacita entity je rádovo menšia než počet možností prostredia:
+\begin{equation}
+    k(E, t) \ll n(P, t).
+\end{equation}
+Entita dokáže preskúmať len zanedbateľný zlomok toho, čo prostredie ponúka.
+\end{assumption}
+
+\subsection{Závislosť priaznivých možností}
+
+Počet priaznivých možností závisí od entity aj prostredia:
+\begin{equation}
+    |F| = f(E, P).
+\end{equation}
+Avšak hustota $\rho = |F|/n$ je primárne vlastnosťou prostredia (koľko dobrých príležitostí prostredie vôbec obsahuje), zatiaľ čo $k$ je primárne vlastnosťou entity (koľko pokusov dokáže urobiť).
+
+\subsection{Atribúty entity a~prístupnosť možností}
+
+Doteraz sme predpokladali, že entita môže v~princípe naraziť na ľubovoľnú z~$n$ možností prostredia. V~realite to tak nie je. Entita nie je charakterizovaná len svojou kapacitou $k$ (šikovnosťou), ale aj množinou ďalších atribútov, ktoré jej niektoré možnosti otvárajú a~iné uzatvárajú.
+
+\begin{definition}[Atribútový vektor entity]
+Nech $\mathbf{a}(E) = (a_1, a_2, \dots, a_m)$ je vektor atribútov entity $E$, kde každé $a_i$ reprezentuje vlastnosť ako sociálny pôvod, vzdelanie, jazyk, vek, pohlavie, etnická príslušnosť, zdravotný stav, geografická poloha, konexie a~pod.
+\end{definition}
+
+\begin{definition}[Prístupná množina]
+Nech $A(E, P) \subseteq \{1, \dots, n\}$ je množina \emph{prístupných možností}, teda tých, ktoré sú entite $E$ vôbec dostupné vzhľadom na jej atribúty $\mathbf{a}(E)$ a~podmienky prostredia $P$. Platí:
+\begin{equation}
+    |A(E, P)| \;\leq\; n(P, t).
+\end{equation}
+\end{definition}
+
+Entita teda nevyberá z~celého priestoru $n$ možností, ale len z~podmnožiny $A$, ku ktorej má prístup. Priaznivé možnosti, na ktoré môže reálne naraziť, sú:
+\begin{equation}
+    F_A \;=\; F \cap A(E, P), \qquad |F_A| \;\leq\; |F|.
+\end{equation}
+
+\begin{definition}[Efektívna hustota]
+Definujeme \emph{efektívnu hustotu} priaznivých možností pre konkrétnu entitu ako:
+\begin{equation}
+    \rho_{\text{eff}}(E, P) \;=\; \frac{|F_A|}{|A(E, P)|} \;=\; \frac{|F \cap A(E, P)|}{|A(E, P)|}.
+\end{equation}
+\end{definition}
+
+\begin{remark}
+Efektívna hustota $\rho_{\text{eff}}$ sa môže výrazne líšiť od celkovej hustoty $\rho$. Prostredie môže byť objektívne bohaté na príležitosti ($\rho$ je vysoké), ale ak sú tieto príležitosti prístupné len entitám s~určitými atribútmi, tak pre ostatné entity je $\rho_{\text{eff}} \ll \rho$.
+
+Napríklad: trh práce v~Silicon Valley ponúka tisíce pozícií ($\rho$ vysoké), ale pre človeka bez víza, bez znalosti angličtiny alebo bez formálneho vzdelania je $|A|$ drasticky zúžené a~$\rho_{\text{eff}}$ klesá na zlomok pôvodnej hodnoty.
+\end{remark}
+
+Upravený model pravdepodobnosti úspechu potom znie:
+\begin{equation}\label{eq:approx_eff}
+    \boxed{\;\mathbb{P}(\text{úspech}) \;\approx\; 1 - (1 - \rho_{\text{eff}})^k\;}
+\end{equation}
+
+\begin{assumption}[Rozšírená kombinatorická asymetria]\label{asp:rozsirena}
+Atribúty entity $\mathbf{a}(E)$ sú z~veľkej časti určené prostredím (rodina, krajina narodenia, spoločenská vrstva), nie vlastným úsilím. Preto aj veľkosť prístupnej množiny $|A(E, P)|$ je primárne vlastnosťou prostredia. To znamená, že $\rho_{\text{eff}}$ závisí od prostredia dvojnásobne:
+\begin{enumerate}
+    \item cez celkovú hustotu príležitostí $\rho$ (koľko dobrých možností existuje),
+    \item cez prístupnosť $|A|/n$ (koľko z~nich je entite vôbec dostupných vzhľadom na atribúty, ktoré jej prostredie pridelilo).
+\end{enumerate}
+\end{assumption}
+
+% ============================================================
+\section{Formálny model}
+% ============================================================
+
+\subsection{Pravdepodobnosť úspechu — základný model}
+
+Najprv uvádzame základný model bez ohľadu na prístupnosť. Ak entita náhodne vyberá $k$ možností z~$n$ a~priaznivých je $|F|$, pravdepodobnosť, že narazí aspoň na jednu priaznivú, je daná hypergeometrickým rozdelením:
+
+\begin{remark}[Predpoklad náhodnosti]
+Predpoklad náhodného výberu je idealizácia; reálny jednotlivec hľadá cielene. Cielenosť však samotnú štruktúru argumentu nemení: ak entita dokáže rozpoznať priaznivé možnosti, efektívne zvyšuje svoje $k$ (má viac \uv{užitočných} pokusov), no stále platí $k \ll |A(E,P)|$. Dominancia prostredia vyjadrená vo vzťahu~\eqref{eq:hlavny} preto zostáva v~platnosti. Náhodnosť si zvolíme len kvôli analytickej jednoduchosti uzavretej formy~\eqref{eq:approx}.
+\end{remark}
+
+
+\begin{equation}\label{eq:presny}
+    \mathbb{P}(\text{úspech}) = 1 - \frac{\binom{n - |F|}{k}}{\binom{n}{k}}.
+\end{equation}
+
+Pre $k \ll n$ platí binomická aproximácia:
+
+\begin{equation}\label{eq:approx}
+    \mathbb{P}(\text{úspech}) \;\approx\; 1 - (1 - \rho)^k
+\end{equation}
+
+kde $\rho = |F|/n$ je hustota priaznivých možností v~prostredí a~$k$ je kapacita entity.
+
+\begin{remark}
+Pre veľmi malé $\rho$ a~malé $k$ platí ďalšia zjednodušená aproximácia:
+\begin{equation}\label{eq:linear}
+    \mathbb{P}(\text{úspech}) \;\approx\; k \cdot \rho.
+\end{equation}
+Pravdepodobnosť úspechu je teda približne súčin schopností entity a~kvality prostredia.
+\end{remark}
+
+\subsection{Pravdepodobnosť úspechu — úplný model s~prístupnosťou}
+
+Po zahrnutí atribútov entity (Definícia~3.7, Definícia~3.8, Definícia~3.9) entita nevyberá z~celého priestoru $n$, ale len z~prístupnej množiny $A(E, P)$. Úplný model preto používa efektívnu hustotu $\rho_{\text{eff}}$:
+
+\begin{equation}\label{eq:uplny}
+    \boxed{\;\mathbb{P}(\text{úspech}) \;\approx\; 1 - (1 - \rho_{\text{eff}})^k\;}
+\end{equation}
+
+V~ďalšej analýze citlivosti pracujeme so všeobecným symbolom $\rho$, pričom v~úplnom modeli sa ním rozumie $\rho_{\text{eff}}$.
+
+% ============================================================
+\section{Analýza citlivosti}
+% ============================================================
+
+\subsection{Parciálne derivácie (absolútna citlivosť)}
+
+Citlivosť pravdepodobnosti úspechu na zmenu prostredia a~zmenu schopností:
+
+\begin{align}
+    \frac{\partial \mathbb{P}}{\partial \rho} &\approx k \cdot (1-\rho)^{k-1} & &\text{(citlivosť na prostredie),} \label{eq:dP_drho} \\[6pt]
+    \frac{\partial \mathbb{P}}{\partial k} &\approx -\ln(1-\rho) \cdot (1-\rho)^k & &\text{(citlivosť na schopnosti).} \label{eq:dP_dk}
+\end{align}
+
+\subsection{Elasticita (relatívna citlivosť)}
+
+Elasticita meria, o~koľko percent sa zmení úspech, ak sa o~$1\,\%$ zmení daný parameter:
+
+\begin{align}
+    \varepsilon_\rho &= \frac{\partial \ln \mathbb{P}}{\partial \ln \rho} = \frac{\rho}{\mathbb{P}} \cdot \frac{\partial \mathbb{P}}{\partial \rho} \approx \frac{k\rho \cdot (1-\rho)^{k-1}}{1-(1-\rho)^k}, \label{eq:elast_rho} \\[6pt]
+    \varepsilon_k &= \frac{\partial \ln \mathbb{P}}{\partial \ln k} = \frac{k}{\mathbb{P}} \cdot \frac{\partial \mathbb{P}}{\partial k} \approx \frac{-k\ln(1-\rho) \cdot (1-\rho)^k}{1-(1-\rho)^k}. \label{eq:elast_k}
+\end{align}
+
+\begin{remark}
+Pre malé $k\rho$ (typický prípad, teda málo pokusov a~nízka hustota):
+\begin{equation}
+    \varepsilon_\rho \approx 1, \qquad \varepsilon_k \approx \frac{k\rho \cdot e^{-k\rho}}{1 - e^{-k\rho}}.
+\end{equation}
+Obe elasticity sú porovnateľné. Samotný model teda neukazuje dominanciu jedného parametra. Kľúčové je, že tvrdenie nezávisí od tvaru vzorca, ale od \emph{rozptylu parametrov v~reálnom svete}.
+\end{remark}
+
+% ============================================================
+\section{Hlavný argument}
+% ============================================================
+
+\begin{proposition}[Dominancia prostredia]\label{prop:dominancia}
+Keďže elasticity $\varepsilon_\rho$ a $\varepsilon_k$ sú porovnateľné, o~tom, čo dominuje výsledku, rozhoduje variancia parametrov naprieč populáciou. V~úplnom modeli s~prístupnosťou (kde $\rho$ označuje $\rho_{\text{eff}}$) platí: ak
+\begin{equation}\label{eq:hlavny}
+    \boxed{\;\operatorname{Var}(\ln \rho_{\text{eff}}) \;\gg\; \operatorname{Var}(\ln k)\;}
+\end{equation}
+potom variancia výsledku (úspechu) závisí hlavne od prostredia $P$ a~atribútov entity, ktoré sú prostredím určené.
+\end{proposition}
+
+\begin{proof}[Zdôvodnenie]
+Označme $S = \ln \mathbb{P}(\text{úspech})$. Linearizáciou okolo stredných hodnôt $\bar{\rho}$, $\bar{k}$:
+\begin{equation}
+    S \;\approx\; S_0 \;+\; \varepsilon_\rho \cdot (\ln \rho - \ln \bar{\rho}) \;+\; \varepsilon_k \cdot (\ln k - \ln \bar{k}).
+\end{equation}
+V~obecnom prípade:
+\begin{equation}
+    \operatorname{Var}(S) \;\approx\; \varepsilon_\rho^2 \cdot \operatorname{Var}(\ln \rho) \;+\; \varepsilon_k^2 \cdot \operatorname{Var}(\ln k) \;+\; 2\,\varepsilon_\rho\,\varepsilon_k \cdot \operatorname{Cov}(\ln \rho,\, \ln k).
+\end{equation}
+
+Za predpokladu nezávislosti $\rho$ a~$k$ je kovariančný člen nulový a~dostávame:
+\begin{equation}
+    \operatorname{Var}(S) \;\approx\; \varepsilon_\rho^2 \cdot \operatorname{Var}(\ln \rho) \;+\; \varepsilon_k^2 \cdot \operatorname{Var}(\ln k).
+\end{equation}
+
+Keďže $\varepsilon_\rho \approx \varepsilon_k$ (obe porovnateľné), ale $\operatorname{Var}(\ln \rho) \gg \operatorname{Var}(\ln k)$, dostávame:
+\begin{equation}
+    \operatorname{Var}(S) \;\approx\; \varepsilon_\rho^2 \cdot \operatorname{Var}(\ln \rho),
+\end{equation}
+teda variancia výsledku je dominantne určená varianciou prostredia.
+
+\textbf{Poznámka ku korelácii.} V~realite môžu byť $\rho$ a~$k$ pozitívne korelované (napr.\ schopnejší jednotlivci migrujú do lepšieho prostredia). Vtedy je $\operatorname{Cov}(\ln \rho, \ln k) > 0$ a~kovariančný člen ďalej \emph{posilňuje} dominanciu prostredia, pretože zvyšuje celkovú varianciu v~smere, kde prostredie a~schopnosti pôsobia súhlasne. Predpoklad nezávislosti je teda konzervatívny odhad, skutočný vplyv prostredia môže byť ešte väčší.
+\end{proof}
+
+\subsection{Empirická opora}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Rozptyl} & \textbf{Zdroj / príklad} \\
+\midrule
+$\rho$ (prostredie) & $10^2 - 10^4 \times$ & Milanovic~\cite{milanovic2015}, Chetty et al.~\cite{chetty2014} \\
+$k$ (schopnosti)    & $2 - 10 \times$      & Pluchino et al.~\cite{pluchino2018}, Hunter \& Schmidt~\cite{hunter1998} \\
+\bottomrule
+\end{tabular}
+\caption{Porovnanie rozptylu parametrov prostredia a~schopností.}
+\label{tab:rozptyl}
+\end{table}
+
+Rozptyl v~kvalite prostredí je rádovo $100\times$ až $1000\times$ väčší než rozptyl v~schopnostiach medzi ľuďmi. Medzinárodné porovnania miezd a~príjmov~\cite{milanovic2015} ukazujú, že priemerný pracovník v~rozvinutej krajine zarába $50\times$ až $100\times$ viac než pracovník vykonávajúci porovnateľnú prácu v~najchudobnejších krajinách. Pri prepočte na \emph{prístupné príležitosti} (pozície, kapitál, siete) je rozptyl ešte väčší. Naopak, variabilita v~kognitívnych schopnostiach a~pracovnej produktivite medzi jednotlivcami v~rámci tej istej profesie je rádovo v~jednotkách~\cite{hunter1998}.
+
+% ============================================================
+\section{Záver}
+% ============================================================
+
+\subsection{Formálne zhrnutie}
+
+Keďže entita preskúma len zlomok možností ($k \ll n$), jej výsledok je dominantne určený hustotou priaznivých možností v~jej okolí, teda prostredím. Schopnosti entity ovplyvňujú, koľko pokusov dostane, ale prostredie určuje, aká je šanca pri každom pokuse. Variancia toho druhého je rádovo väčšia.
+
+\subsection{Zrozumiteľná interpretácia}
+
+Predstavte si, že život je ako hľadanie pokladu na obrovskom poli. Každý človek má určitý počet krokov, ktoré môže za život urobiť, niekto 100, niekto šikovnejší možno 500. To je rozdiel v~schopnostiach.
+
+Ale to pole má milióny miest. Ani ten najšikovnejší človek neprejde ani zlomok z~nich. Takže to, či poklad nájde, závisí hlavne od toho, \emph{koľko pokladov je na tom poli zakopaných}, teda od prostredia.
+
+Ak žijete na poli, kde je poklad na každom stom mieste, nájdete ho skoro určite, či ste priemerný alebo výnimočný. Ak žijete na poli, kde je poklad na každom milióntom mieste, nenájdete ho skoro nikdy, nech ste akokoľvek šikovný.
+
+A~teraz si predstavte ešte jednu vec: nie každý smie chodiť po celom poli. Niektorí ľudia majú povolené chodiť všade, iní majú vstup zakázaný do veľkých častí poľa, kde sa poklady nachádzajú najčastejšie. Dvaja rovnako šikovní ľudia, s~rovnakým počtom krokov, ale jeden smie chodiť po celom poli a~druhý len po malom kúsku pri okraji, kde pokladov takmer niet. Výsledok bude dramaticky odlišný, aj keď ich schopnosti sú rovnaké. To, kam vás pustia, nezávisí od vašej šikovnosti, ale od toho, kto ste, odkiaľ pochádzate, akú máte farbu pasu alebo do akej rodiny ste sa narodili.
+
+Záver je jednoduchý: rozdiel medzi \uv{dobrým} a~\uv{zlým} prostredím je tisíc- až miliónkrát väčší než rozdiel medzi \uv{priemerným} a~\uv{výnimočným} človekom. Preto to, kde sa narodíte a~v~akých podmienkach žijete, určuje váš osud oveľa viac než vaše schopnosti. Schopnosti nie sú zbytočné, ale bez priaznivého prostredia jednoducho nestačia. A~niekedy ani priaznivé prostredie nepomôže, ak atribúty entity, na ktoré nemá vplyv, jej nedovolia k~týmto príležitostiam vôbec pristúpiť.
+
+\subsection{Prečo na tom záleží}
+
+Ak je tvrdenie o~dominancii prostredia matematicky očakávateľné, má niekoľko praktických dôsledkov:
+
+\begin{itemize}
+    \item \textbf{Morálne:} Osobný úspech nie je primárne morálnou zásluhou a~osobné zlyhanie nie je primárne morálnou vinou. Narácia \uv{kto chce, ten môže} je v~rozpore s~dominantným vplyvom prostredia.
+    \item \textbf{Politicky:} Ak variancia prostredia dominuje varianciu schopností o~dva až tri rády, potom investície do \emph{prostredia} (vzdelávanie, infraštruktúra, prístupnosť) majú rádovo väčší efekt na agregátny úspech populácie než investície do selekcie či tréningu najtalentovanejších.
+    \item \textbf{Pre jednotlivca:} Zmena prostredia (migrácia, zmena odboru, zmena kruhu) môže mať pre výsledok väčší efekt než zvyšovanie vlastnej schopnosti. Toto je v~súlade s~pozorovaním, že najväčší rozdiel v~životnej trajektórii často prichádza nie z~\uv{tvrdšej práce}, ale z~\uv{dostať sa na iné miesto}.
+    \item \textbf{Pre analýzu nerovnosti:} Model dáva jednotný rámec pre tri javy, ktoré sa obvykle študujú oddelene, geografickú nerovnosť~\cite{milanovic2015}, medzigeneračnú mobilitu~\cite{chetty2014} a~štrukturálnu diskrimináciu~\cite{bourdieu1986}, všetky ako špeciálne prípady zúženia $A(E,P)$.
+\end{itemize}
+
+\subsection{Obmedzenia modelu}
+
+Predkladaný rámec má niekoľko zámerných zjednodušení, ktoré treba uviesť:
+\begin{itemize}
+    \item \textbf{Binárny úspech.} Model pracuje s~\uv{úspechom} ako s~binárnou udalosťou. Reálny úspech je spojité spektrum; zovšeobecnenie na stupnicu hodnôt by vyžadovalo váhovanie priaznivých možností.
+    \item \textbf{Nezávislosť pokusov.} Predpoklad, že $k$ pokusov je nezávislých, je idealizácia. V~realite neúspech skracuje dostupný čas a~zmenšuje budúce $k$ (path-dependence).
+    \item \textbf{Statický priestor možností.} Model neuvažuje zmenu $n$, $\rho$ a~$A$ v~čase. Dynamika (ekonomické cykly, migrácia, staroba) by vyžadovala časovo závislú formuláciu.
+    \item \textbf{Empirická opora tabuľky~\ref{tab:rozptyl}} je odvodená z~cudzích prác~\cite{milanovic2015,chetty2014,hunter1998,pluchino2018}; vlastné kalibrované meranie $\rho_{\text{eff}}$ je otvorený problém.
+\end{itemize}
+
+% ============================================================
+\begin{thebibliography}{9}
+
+\bibitem{bourdieu1986} Bourdieu, P. (1986). The Forms of Capital. In J.~Richardson (Ed.), \textit{Handbook of Theory and Research for the Sociology of Education}, pp.~241--258. Greenwood.
+
+\bibitem{chetty2014} Chetty, R., Hendren, N., Kline, P., Saez, E. (2014). Where is the Land of Opportunity? The Geography of Intergenerational Mobility in the United States. \textit{Quarterly Journal of Economics}, 129(4), 1553--1623.
+
+\bibitem{milanovic2015} Milanovic, B. (2015). Global Inequality of Opportunity: How Much of Our Income Is Determined by Where We Live? \textit{Review of Economics and Statistics}, 97(2), 452--460.
+
+\bibitem{pluchino2018} Pluchino, A., Biondo, A.\,E., Rapisarda, A. (2018). Talent vs Luck: The Role of Randomness in Success and Failure. \textit{Advances in Complex Systems}, 21(3--4), 1850014.
+
+\bibitem{hunter1998} Hunter, J.\,E., Schmidt, F.\,L. (1998). The Validity and Utility of Selection Methods in Personnel Psychology. \textit{Psychological Bulletin}, 124(2), 262--274.
+
+\end{thebibliography}
+
+\end{document}
