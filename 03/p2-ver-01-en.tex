@@ -1,0 +1,341 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{parskip}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=blue
+}
+
+\title{Communication with an Adaptive Receiver Model:\\
+an Overview of a Conceptual Framework}
+
+\author{Kristian Sestak}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent
+Classical Shannon information theory treats the receiver as a passive
+decoder that reconstructs the transmitted message with minimum
+distortion. A real receiver, however, is not optimal: it has limited
+computational power, its own world model, a decision-making goal, and
+an individual history of interactions. This article proposes a
+conceptual framework that explicitly incorporates these aspects. Its
+main components are: (i) an extension of the rate-distortion function
+by the receiver's model and goal, (ii) learning the receiver's
+parameters from shared communication history, (iii) a probabilistic
+decision model that expresses, via a measurable function, the
+\emph{cost of adaptation} and compares it against the expected
+benefit, thereby allowing a rational decision about whether this cost
+should be accepted at all, and (iv) thermodynamic limits of such
+adaptation.  The central thesis is that optimizing transmission is
+not free: every efficiency gain requires computation, memory, time or
+energy, and sometimes this cost exceeds the value of the information
+gained. The aim is to identify open problems and prepare the ground
+for formal results; the article does not prove new theorems, but
+pinpoints where they might arise.
+\end{abstract}
+
+\section{Introduction}
+
+Shannon's rate-distortion theory~\cite{shannon1948,shannon1959}
+establishes a fundamental limit of transmission efficiency: a source
+$X$ is compressed into $R$ bits and the decoder reconstructs
+$\hat{X}$ with error $d(X,\hat{X}) \le D$. The curve $R(D)$ is the
+minimum rate at a given distortion, and Shannon proved that it is
+achievable (with suitably long code blocks) independently of the
+receiver.
+
+Wyner and Ziv~\cite{wynerziv1976} extended the theory to the case in
+which the receiver has side information $S$ with a known joint
+distribution $P(X,S)$. The rate drops to
+\[
+    R_{WZ}(D) \;=\; \min_{P(U|X)} [I(X;U) - I(S;U)]
+\]
+with reconstruction $\hat{X} = \kappa(U,S)$.
+
+Both formulations, however, assume that the receiver is an optimal
+decoder with perfect knowledge of the statistics. This does not hold
+in practice. Language, human--machine dialogue, network communication
+between heterogeneous endpoints, federated learning, all are systems
+where the receiver is an \emph{agent} with its own model, goal and
+constraints. This article outlines a framework that promotes these
+elements to first-class variables.
+
+\section{Receiver Model}
+
+We characterise the receiver by the triple $(M, G, \kappa)$:
+\begin{itemize}
+    \item $M$: the \emph{world model}, an estimated distribution over
+          $X$, in general different from the true $P_X$.
+    \item $G$: the \emph{goal}, a task with action space $\mathcal{A}$
+          and loss function $\ell(a, X)$.
+    \item $\kappa_M : \mathcal{I} \to \mathcal{A}$:
+          the \emph{decision function} parametrised by the model $M$,
+          not arbitrary.
+\end{itemize}
+
+\noindent The proposed rate-distortion function:
+\begin{equation}
+    R_{M,G}(L) \;=\; \min_{f: \mathcal{X} \to \mathcal{I}}
+    \mathbb{E}[|f(X)|]
+    \quad \text{s.t.} \quad
+    \mathbb{E}[\ell(\kappa_M(f(X)), X)] \le L.
+    \label{eq:rmg}
+\end{equation}
+
+Differences with respect to~$R_{WZ}$:
+\begin{enumerate}
+    \item distortion is measured by the \emph{task loss} $\ell$ rather
+          than $d(X,\hat{X})$,
+    \item $\kappa$ is \emph{fixed by the model $M$}, not freely optimised,
+    \item the expectation is taken under the true $P_X$, but $\kappa$
+          uses the \emph{perceived} model $M$, so model mismatch
+          becomes an intrinsic component of the loss.
+\end{enumerate}
+
+Informal decomposition of the expected loss:
+\[
+    \mathbb{E}[\ell] \;\approx\;
+    \underbrace{L^\star(R)}_{\text{rate-limited}}
+    + \underbrace{\Delta(M, P_X)}_{\text{model mismatch}}
+    + \underbrace{\Delta(\kappa_M, \kappa^\star)}_{\text{bounded compute}}.
+\]
+The second and third terms cannot be removed by increasing~$R$, which
+is fundamentally new compared with Shannon.
+
+\section{History as the Source of Adaptation}
+
+The parameters $(M, G, \kappa)$ are in general unknown and differ in
+practice between receivers. The only realistically available source
+of information about a particular receiver is the \emph{history} of
+shared communication. By analogy with universal source
+coding~\cite{rissanen1978,lempelziv1977}:
+\[
+    R_T \;=\; R^\star \;+\; \frac{c(k)}{T}
+\]
+where $R^\star$ is the optimal rate under full receiver knowledge,
+$T$~is the length of history, and $k$ the model complexity. For large
+$T$:
+\begin{equation}
+    \lim_{T \to \infty} \frac{1}{T}\sum_{t=1}^T R_t \;=\; h(X, A),
+    \label{eq:entropy-rate}
+\end{equation}
+where $h(X, A)$ is the \emph{entropy rate} of the joint source and
+receiver-reaction process. This is an irreducible lower bound.
+
+Communication therefore naturally splits into three phases:
+\begin{enumerate}
+    \item \emph{Cold phase}: universal code, history collection.
+    \item \emph{Warm phase}: gradual adaptation to the estimated
+          $(M, G, \kappa)$.
+    \item \emph{Steady state}: $R_T \to R_{M,G}(L)$, the penalty
+          $c(k)/T$ vanishes.
+\end{enumerate}
+
+In the case of bidirectional
+interaction~\cite{kaspi1985,orlitsky1990} convergence is faster,
+because every exchange carries two signals (content plus an indirect
+signal about the goal).
+
+If we have access to the history of \emph{many} receivers, we can
+estimate a \emph{population manifold} in the parameter space. For a
+new receiver it then suffices to localise it with a few observations,
+and the adaptation penalty drops to $c(d)/T$, where $d \ll k$ is the
+intrinsic dimension of the manifold (hierarchical Bayes,
+meta-learning).
+
+\section{Decision Framework: When to Adapt}
+
+The central thesis of this article is that optimizing transmission is
+not free. Adaptation costs time~$\tau(T)$, memory, energy and
+computation. We therefore need a \emph{measurable function} that
+quantifies the cost of adaptation and places it against the expected
+benefit, so that we can rationally decide whether to accept this cost
+at all. Without such a function, optimization becomes a dogma, even
+though in some cases its cost exceeds the value of the information
+gained.
+
+We define the expected benefit and the expected cost:
+\[
+    \text{Benefit} = N_{\text{future}} \cdot [R_{\text{univ}} - R_{\text{adapt}}(T)] \cdot c_{\text{bit}},
+\]
+\[
+    \text{Cost}(T) = C_{\text{comp}} \cdot \tau(T) + C_{\text{energy}} + C_{\text{mem}}.
+\]
+
+Deterministic decision rule:
+\[
+    \text{adapt} \iff \text{Benefit} > \text{Cost}.
+\]
+
+Since all input quantities (gap, relationship length, $\tau$) are
+uncertain and no two receivers are identical, a probabilistic
+version is more natural. Define:
+\begin{equation}
+    P_{\text{improve}}(k)
+    \;=\; \Pr\!\big[\,G \cdot N \cdot c_{\text{bit}} > C_{\text{comp}} \cdot \tau
+    \,\big|\, \text{obs}_{1:k}\,\big],
+    \label{eq:pimprove}
+\end{equation}
+where $G$ is the gap $H(X) - h(X,A)$ and $N$ the expected number of
+future messages. The function $P_{\text{improve}}(k) \in [0,1]$ is
+the \emph{measurable output} that directly underpins the decision:
+\[
+    \text{adapt} \iff P_{\text{improve}}(k) > \theta.
+\]
+The threshold~$\theta$ expresses risk tolerance and willingness to
+pay an uncertain cost.
+
+Under a Gaussian prior on the population $(G, N)$, the function
+$P_{\text{improve}}$ admits a closed form via the cumulative
+distribution function~$\Phi$, so it is \emph{exactly computable} from
+statistics of the history and the population. The accuracy of
+population parameter estimates grows as $1/\sqrt{N_{\text{pop}}}$.
+
+The function $P_{\text{improve}}(k)$ cannot answer for $k=0$ without
+a population prior, since the decision model always requires either
+individual history or amortised population experience. Computing
+$P_{\text{improve}}$ also has a cost, which must be lower than the
+average saving from the decisions it produces; otherwise the
+decision model becomes yet another problem that needs its own
+decision (the principle of \emph{selective adaptation}).
+
+\section{Thermodynamic Limits}
+
+Every model adaptation involves memory operations. Landauer's
+principle~\cite{landauer1961} sets a lower bound on the energy of an
+irreversible bit change:
+\[
+    E_{\min} = kT \ln 2.
+\]
+In practice modern systems operate about $10^{10}\times$ above the
+Landauer limit, so the thermodynamic component is negligible. In the
+limits (reversible and quantum systems, high-density memory) it
+becomes dominant.
+
+Globally, the second law of thermodynamics implies that every local
+reduction of information entropy is paid for by a larger rise of
+entropy in the environment. Information efficiency is not free even
+in the most basic physical sense, because it is always paid for by
+heat dissipated into the surroundings.
+
+\section{Boundaries of the Model}
+
+The model is an abstraction over the symbolic and semantic layers of
+communication; the physical layer (analogue quantities, modulation,
+channel noise) is assumed to be solved through the classical
+\emph{channel coding theorem}. By ``data'' we mean the bits
+transmitted through the channel; information, knowledge and wisdom
+arise only at the receiver through the interaction of data with its
+model.
+
+\emph{Full efficiency} of transmission is unreachable for five
+independent reasons: (1)~channel noise, (2)~incomplete knowledge of
+the receiver, (3)~finite transmission time, (4)~finite adaptation
+time, (5)~the irreducible entropy $h(X,A)$ of the joint process. The
+framework focuses on points (2) and (4).
+
+\section{Open Questions}
+
+\begin{itemize}
+    \item \textbf{Gap theorem}: does a tight upper/lower bound on
+          $R_{M,G}(L) - R_{WZ}(L)$ exist as a function of
+          $\text{KL}(P_X\|M)$?
+    \item \textbf{Rate-distortion for the receiver manifold}: what is
+          the optimal rate for representing a receiver with a given
+          quantisation error? This question connects Shannon's
+          rate-distortion theory with manifold learning and
+          nonparametric Bayesian methods.
+    \item \textbf{Optimal stopping}: is there a closed form for the
+          threshold $\theta^\star(\tau, N)$ in the probabilistic
+          decision~\eqref{eq:pimprove}?
+    \item \textbf{Task-aware entropy rate}: for which class of goals
+          $G$ does the entropy rate $h(X,A)$ drop below $h(X)$? Can
+          these classes be characterised in
+          information-geometric terms?
+    \item \textbf{Equivalence with the information
+          bottleneck}~\cite{tishby1999}: is the categorisation of
+          receivers equivalent to an IB problem with task loss as
+          relevance?
+\end{itemize}
+
+\section{Conclusion}
+
+The presented framework consolidates several strands of thought:
+rate-distortion with side information, universal source coding,
+semantic communication~\cite{popovski2022}, meta-learning and online
+adaptation. None of the individual results is new, what is new is
+their \emph{integrated framing} with an explicit decision module and
+a thermodynamic perspective. The central motif is the construction of
+a measurable function for the cost of optimization: without it,
+adaptation is done blindly; with it, it becomes a rational decision
+that sometimes reads ``do not adapt'', because nothing in the world
+is free. The aim of further work is to convert the open questions
+into formal claims and to prove at least one non-trivial theorem.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{99}
+
+\bibitem{shannon1948}
+C.~E.~Shannon, \emph{A mathematical theory of communication},
+Bell System Technical Journal, vol.~27, 1948.
+
+\bibitem{shannon1959}
+C.~E.~Shannon, \emph{Coding theorems for a discrete source with
+a fidelity criterion}, IRE Nat.\ Conv.\ Rec., 1959.
+
+\bibitem{wynerziv1976}
+A.~D.~Wyner, J.~Ziv, \emph{The rate-distortion function for source
+coding with side information at the decoder}, IEEE Trans.\ Inf.\ Theory,
+vol.~22, 1976.
+
+\bibitem{rissanen1978}
+J.~Rissanen, \emph{Modeling by shortest data description},
+Automatica, vol.~14, 1978.
+
+\bibitem{lempelziv1977}
+J.~Ziv, A.~Lempel, \emph{A universal algorithm for sequential data
+compression}, IEEE Trans.\ Inf.\ Theory, vol.~23, 1977.
+
+\bibitem{kaspi1985}
+A.~H.~Kaspi, \emph{Two-way source coding with a fidelity criterion},
+IEEE Trans.\ Inf.\ Theory, vol.~31, 1985.
+
+\bibitem{orlitsky1990}
+A.~Orlitsky, \emph{Worst-case interactive communication I: Two
+messages are almost optimal}, IEEE Trans.\ Inf.\ Theory, vol.~36, 1990.
+
+\bibitem{landauer1961}
+R.~Landauer, \emph{Irreversibility and heat generation in the
+computing process}, IBM J.\ Research and Development, vol.~5, 1961.
+
+\bibitem{tishby1999}
+N.~Tishby, F.~C.~Pereira, W.~Bialek, \emph{The information bottleneck
+method}, Proc.\ 37th Allerton Conf., 1999.
+
+\bibitem{popovski2022}
+P.~Popovski, O.~Simeone, F.~Boccardi, D.~Gündüz, O.~Sahin,
+\emph{Semantic-effectiveness filtering and control for post-5G
+wireless connectivity}, Journal of the Indian Institute of Science,
+2020; and subsequent literature on semantic communication, review
+2022.
+
+\end{thebibliography}
+
+\end{document}

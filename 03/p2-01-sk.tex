@@ -1,0 +1,323 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[slovak]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{parskip}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=blue
+}
+
+\title{Komunikácia s adaptívnym modelom prijímateľa:\\
+prehľad konceptuálneho rámca}
+
+\author{krse}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent
+Klasická Shannonova teória informácie chápe prijímateľa ako pasívny
+dekóder, ktorý rekonštruuje vyslanú správu s minimálnou distorziou.
+Reálny prijímateľ však nie je optimálny: má obmedzený výpočtový výkon,
+vlastný model sveta, cieľ rozhodovania a individuálnu históriu
+interakcií. Tento článok navrhuje konceptuálny rámec, ktorý tieto
+aspekty explicitne zahŕňa. Hlavnými komponentmi sú: (i) rozšírenie
+rate-distortion funkcie o model a cieľ prijímateľa, (ii) učenie
+parametrov prijímateľa zo spoločnej histórie komunikácie,
+(iii) pravdepodobnostný rozhodovací model, ktorý meratelnou funkciou
+vyjadruje \emph{cenu adaptácie} a porovnáva ju s očakávaným ziskom,
+čím umožňuje racionálne rozhodnutie o tom, či je túto cenu vôbec
+vhodné akceptovať, a (iv) termodynamické limity takejto adaptácie.
+Ústrednou tézou je, že optimalizácia prenosu nie je zadarmo: každé
+zlepšenie efektivity vyžaduje výpočet, pamäť, čas alebo energiu, a
+niekedy táto cena prevýši hodnotu získanej informácie.  Cieľom je
+pomenovať otvorené otázky a pripraviť terén pre formálne výsledky;
+článok nedokazuje nové vety, ale identifikuje miesta, kde by mohli
+vzniknúť.
+\end{abstract}
+
+\section{Úvod}
+
+Shannonova rate-distortion teória~\cite{shannon1948,shannon1959}
+stanovuje fundamentálnu medzu efektivity prenosu: zdroj $X$ sa
+komprimuje do $R$ bitov a dekóder rekonštruuje $\hat{X}$ s chybou
+$d(X,\hat{X}) \le D$. Krivka $R(D)$ je minimálny rate pri danej
+distorzii a Shannon dokázal, že je dosiahnuteľná (s vhodne dlhým
+kódovým blokom) nezávisle od prijímateľa.
+
+Wyner a Ziv~\cite{wynerziv1976} rozšírili teóriu pre prípad, keď
+prijímateľ disponuje vedľajšou informáciou $S$ so známym spoločným
+rozdelením $P(X,S)$. Rate klesá na
+\[
+    R_{WZ}(D) \;=\; \min_{P(U|X)} [I(X;U) - I(S;U)]
+\]
+s rekonštrukciou $\hat{X} = \kappa(U,S)$.
+
+Obe formulácie však predpokladajú, že prijímateľ je optimálny dekóder
+s dokonalou znalosťou štatistík. V praxi to neplatí. Jazyk, dialóg
+ľudí a strojov, sieťová komunikácia s rôznymi koncovými uzlami,
+federované učenie, všetko sú systémy, kde prijímateľ je
+\emph{agent} s vlastným modelom, cieľom a obmedzeniami. Tento článok
+zhrnuje rámec, ktorý tieto prvky zavádza ako prvotriedne premenné.
+
+\section{Model prijímateľa}
+
+Prijímateľa charakterizujeme trojicou $(M, G, \kappa)$:
+\begin{itemize}
+    \item $M$: \emph{model sveta}, odhadované rozdelenie nad $X$,
+          vo všeobecnosti odlišné od skutočného $P_X$.
+    \item $G$: \emph{cieľ}, úloha s akčným priestorom $\mathcal{A}$
+          a loss funkciou $\ell(a, X)$.
+    \item $\kappa_M : \mathcal{I} \to \mathcal{A}$:
+          \emph{rozhodovacia funkcia} parametrizovaná modelom $M$,
+          nie ľubovoľná.
+\end{itemize}
+
+\noindent Navrhovaná rate-distortion funkcia:
+\begin{equation}
+    R_{M,G}(L) \;=\; \min_{f: \mathcal{X} \to \mathcal{I}}
+    \mathbb{E}[|f(X)|]
+    \quad \text{s.t.} \quad
+    \mathbb{E}[\ell(\kappa_M(f(X)), X)] \le L.
+    \label{eq:rmg}
+\end{equation}
+
+Odlišnosti oproti~$R_{WZ}$:
+\begin{enumerate}
+    \item distorzia meraná \emph{task-lossom} $\ell$ miesto~$d(X,\hat{X})$,
+    \item $\kappa$ je \emph{fixovaná modelom $M$}, nie voľne optimalizovaná,
+    \item očakávanie pod skutočným $P_X$, ale $\kappa$ používa
+          \emph{vnímaný} model $M$, takže mismatch je vlastná zložka
+          straty.
+\end{enumerate}
+
+Neformálna dekompozícia očakávanej straty:
+\[
+    \mathbb{E}[\ell] \;\approx\;
+    \underbrace{L^\star(R)}_{\text{rate-limited}}
+    + \underbrace{\Delta(M, P_X)}_{\text{model mismatch}}
+    + \underbrace{\Delta(\kappa_M, \kappa^\star)}_{\text{bounded compute}}.
+\]
+Druhý a tretí člen nie sú odstrániteľné zvyšovaním~$R$, čo je zásadne
+nové oproti Shannonovi.
+
+\section{História ako zdroj adaptácie}
+
+Parametre $(M, G, \kappa)$ vo všeobecnosti nepoznáme a v praxi sa
+líšia medzi prijímateľmi. Jediný reálne dostupný zdroj informácie
+o konkrétnom prijímateľovi je \emph{história} spoločnej komunikácie.
+Analogicky s univerzálnym zdrojovým kódovaním~\cite{rissanen1978,
+lempelziv1977} platí:
+\[
+    R_T \;=\; R^\star \;+\; \frac{c(k)}{T}
+\]
+kde $R^\star$ je optimálny rate pri plnej znalosti prijímateľa,
+$T$~dĺžka histórie, $k$ zložitosť modelu. Pre veľké~$T$:
+\begin{equation}
+    \lim_{T \to \infty} \frac{1}{T}\sum_{t=1}^T R_t \;=\; h(X, A),
+    \label{eq:entropy-rate}
+\end{equation}
+kde $h(X, A)$ je \emph{entropický rate} spoločného procesu zdroja
+a reakcií prijímateľa. Toto je neredukovateľná dolná hranica.
+
+Komunikácia sa teda prirodzene delí na tri fázy:
+\begin{enumerate}
+    \item \emph{Cold phase}: univerzálny kód, zber histórie.
+    \item \emph{Warm phase}: postupná adaptácia na odhadnutý
+          $(M, G, \kappa)$.
+    \item \emph{Steady state}: $R_T \to R_{M,G}(L)$, penalty
+          $c(k)/T$ mizne.
+\end{enumerate}
+
+V prípade obojsmernej interakcie~\cite{kaspi1985,orlitsky1990} je
+konvergencia rýchlejšia, pretože každá výmena nesie dva signály
+(obsah + nepriamy signál o cieli).
+
+Ak máme k dispozícii históriu \emph{viacerých} prijímateľov, môžeme
+odhadnúť \emph{populačný manifold} v priestore parametrov. Pre nového
+prijímateľa potom stačí lokalizácia niekoľkými pozorovaniami
+a adaptačná penalty klesá na $c(d)/T$, kde $d \ll k$ je vnútorná
+dimenzia manifoldu (hierarchický Bayes, meta-learning).
+
+\section{Rozhodovací rámec: kedy adaptovať}
+
+Centrálna téza tohto článku znie: optimalizácia prenosu nie je
+zadarmo. Adaptácia stojí čas~$\tau(T)$, pamäť, energiu a výpočet.
+Preto potrebujeme \emph{meratelnú funkciu}, ktorá vyjadrí cenu
+adaptácie a postaví ju proti očakávanému zisku, aby sme sa mohli
+racionálne rozhodnúť, či túto cenu vôbec akceptovať. Bez takejto
+funkcie sa optimalizácia stáva dogmou, pričom v niektorých prípadoch
+je jej cena vyššia než hodnota získanej informácie.
+
+Definujeme očakávaný zisk a očakávaný náklad:
+\[
+    \text{Benefit} = N_{\text{future}} \cdot [R_{\text{univ}} - R_{\text{adapt}}(T)] \cdot c_{\text{bit}},
+\]
+\[
+    \text{Cost}(T) = C_{\text{comp}} \cdot \tau(T) + C_{\text{energy}} + C_{\text{mem}}.
+\]
+
+Deterministické rozhodovanie:
+\[
+    \text{adaptuj} \iff \text{Benefit} > \text{Cost}.
+\]
+
+Keďže všetky vstupné veličiny (gap, dĺžka vzťahu, $\tau$) sú neisté
+a žiadni dvaja prijímatelia nie sú identickí, prirodzenejšia je
+pravdepodobnostná verzia. Definujme:
+\begin{equation}
+    P_{\text{improve}}(k)
+    \;=\; \Pr\!\big[\,G \cdot N \cdot c_{\text{bit}} > C_{\text{comp}} \cdot \tau
+    \,\big|\, \text{obs}_{1:k}\,\big],
+    \label{eq:pimprove}
+\end{equation}
+kde $G$ je gap $H(X) - h(X,A)$, $N$ očakávaný počet budúcich správ.
+Funkcia $P_{\text{improve}}(k) \in [0,1]$ je \emph{meratelný výstup},
+ktorý priamo podkladá rozhodnutie:
+\[
+    \text{adaptuj} \iff P_{\text{improve}}(k) > \theta.
+\]
+Prah~$\theta$ vyjadruje toleranciu rizika a ochotu platiť neistú cenu.
+
+Pri Gaussovskom priore na populáciu $(G, N)$ má $P_{\text{improve}}$
+uzavretú formu cez distribučnú funkciu~$\Phi$, teda je \emph{exaktne
+vyčísliteľná} zo štatistík histórie a populácie. Presnosť odhadu
+populačných parametrov rastie ako $1/\sqrt{N_{\text{pop}}}$.
+
+Funkcia $P_{\text{improve}}(k)$ nevie odpovedať pre $k=0$ bez
+populačného prioru, keďže rozhodovací model vždy vyžaduje buď
+individuálnu históriu, alebo amortizovanú populačnú skúsenosť.
+Samotný výpočet $P_{\text{improve}}$ má tiež cenu, ktorá musí byť
+nižšia než priemerná úspora z rozhodnutí, ktoré generuje; inak sa
+rozhodovací model stáva ďalším problémom, ktorý potrebuje vlastné
+rozhodnutie (princíp \emph{selektívnej adaptácie}).
+
+\section{Termodynamické limity}
+
+Každá adaptácia modelu zahŕňa operácie nad pamäťou. Landauerov
+princíp~\cite{landauer1961} kladie dolnú hranicu na energiu
+nevratnej zmeny bitu:
+\[
+    E_{\min} = kT \ln 2.
+\]
+V praxi moderné systémy pracujú cca $10^{10}\times$ nad Landauerovou
+hranicou, takže termodynamická zložka je zanedbateľná. V limitoch
+(reverzibilné, kvantové systémy, vysoko hustá pamäť) sa stáva
+dominantnou.
+
+Globálne: druhý termodynamický zákon implikuje, že každá lokálna
+redukcia informačnej entropie sa vykupuje väčším nárastom entropie
+okolia. Informačná efektivita nie je zadarmo ani v tom najzákladnejšom
+fyzikálnom zmysle, pretože sa vždy platí teplom odovzdaným do okolia.
+
+\section{Hranice modelu}
+
+Model je abstrakcia nad symbolovou a sémantickou vrstvou komunikácie;
+fyzikálnu vrstvu (analógové veličiny, modulácia, šum kanála)
+predpokladá za vyriešenú prostredníctvom klasického
+\emph{channel coding theorem}. Pod pojmom \uv{dáta} rozumieme bity
+prenesené kanálom; informácia, znalosť a múdrosť vznikajú až
+u prijímateľa prostredníctvom interakcie dát s jeho modelom.
+
+\emph{Úplná efektivita} prenosu nie je dosiahnuteľná z piatich
+nezávislých dôvodov: (1)~šum kanála, (2)~neúplná znalosť prijímateľa,
+(3)~konečný čas prenosu, (4)~konečný čas adaptácie,
+(5)~ireducibilná entropia $h(X,A)$ spoločného procesu. Rámec sa
+sústredí na druhý a štvrtý bod.
+
+\section{Otvorené otázky}
+
+\begin{itemize}
+    \item \textbf{Gap teorém}: existuje presná horná/dolná hranica
+          na $R_{M,G}(L) - R_{WZ}(L)$ ako funkcia $\text{KL}(P_X\|M)$?
+    \item \textbf{Rate-distortion pre manifold prijímateľov}: aký je
+          optimálny rate na reprezentáciu prijímateľa s danou
+          kvantizačnou chybou? Táto otázka spája Shannonovu rate-distortion
+          teóriu s manifold learningom a nonparametric Bayes.
+    \item \textbf{Optimal stopping}: existuje uzavretá forma prahu
+          $\theta^\star(\tau, N)$ pre pravdepodobnostné rozhodnutie~\eqref{eq:pimprove}?
+    \item \textbf{Task-aware entropický rate}: pre akú triedu cieľov
+          $G$ sa entropický rate $h(X,A)$ znižuje pod $h(X)$? Možno
+          charakterizovať tieto triedy informačne-geometricky?
+    \item \textbf{Ekvivalencia s information bottleneck}~\cite{tishby1999}:
+          je kategorizácia prijímateľov ekvivalentná úlohe IB s task
+          lossom ako relevanciou?
+\end{itemize}
+
+\section{Záver}
+
+Prezentovaný rámec konsoliduje viaceré myšlienkové prúdy:
+rate-distortion s vedľajšou informáciou, univerzálne zdrojové
+kódovanie, semantickú komunikáciu~\cite{popovski2022}, meta-learning
+a online adaptáciu. Žiaden z jednotlivých výsledkov nie je nový, nové
+je ich \emph{integrované zarámovanie} s explicitným rozhodovacím
+modulom a termodynamickým pohľadom. Ústredným motívom je konštrukcia
+meratelnej funkcie pre cenu optimalizácie: bez nej sa adaptácia robí
+slepo, s ňou sa stáva racionálnym rozhodnutím, ktoré občas znie
+\uv{neadaptuj}, lebo vo svete nie je nič zadarmo. Cieľom ďalšej práce
+je previesť otvorené otázky na formálne tvrdenia a dokázať aspoň jedno
+netriviálne.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{99}
+
+\bibitem{shannon1948}
+C.~E.~Shannon, \emph{A mathematical theory of communication},
+Bell System Technical Journal, vol.~27, 1948.
+
+\bibitem{shannon1959}
+C.~E.~Shannon, \emph{Coding theorems for a discrete source with
+a fidelity criterion}, IRE Nat.\ Conv.\ Rec., 1959.
+
+\bibitem{wynerziv1976}
+A.~D.~Wyner, J.~Ziv, \emph{The rate-distortion function for source
+coding with side information at the decoder}, IEEE Trans.\ Inf.\ Theory,
+vol.~22, 1976.
+
+\bibitem{rissanen1978}
+J.~Rissanen, \emph{Modeling by shortest data description},
+Automatica, vol.~14, 1978.
+
+\bibitem{lempelziv1977}
+J.~Ziv, A.~Lempel, \emph{A universal algorithm for sequential data
+compression}, IEEE Trans.\ Inf.\ Theory, vol.~23, 1977.
+
+\bibitem{kaspi1985}
+A.~H.~Kaspi, \emph{Two-way source coding with a fidelity criterion},
+IEEE Trans.\ Inf.\ Theory, vol.~31, 1985.
+
+\bibitem{orlitsky1990}
+A.~Orlitsky, \emph{Worst-case interactive communication I: Two
+messages are almost optimal}, IEEE Trans.\ Inf.\ Theory, vol.~36, 1990.
+
+\bibitem{landauer1961}
+R.~Landauer, \emph{Irreversibility and heat generation in the
+computing process}, IBM J.\ Research and Development, vol.~5, 1961.
+
+\bibitem{tishby1999}
+N.~Tishby, F.~C.~Pereira, W.~Bialek, \emph{The information bottleneck
+method}, Proc.\ 37th Allerton Conf., 1999.
+
+\bibitem{popovski2022}
+P.~Popovski, O.~Simeone, F.~Boccardi, D.~Gündüz, O.~Sahin,
+\emph{Semantic-effectiveness filtering and control for post-5G
+wireless connectivity}, Journal of the Indian Institute of Science,
+2020; a následne literatúra o semantic communication, review 2022.
+
+\end{thebibliography}
+
+\end{document}
